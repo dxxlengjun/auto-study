@@ -1,12 +1,31 @@
 // 获取题目，并获取答案
 function cnosole_question() {
+    var question;
     try {
-        var question = className("ListView").findOnce().parent().child(0).desc();
-        window.answer.setText(question)
-        console.log(".题目：" + question);
-    } catch(err) {
-        console.log("出错了")
+        question = className("ListView").findOnce().parent().child(0).desc();
+    } catch (err) {
+        window.answer.setText("请重新获取答案")
     }
+
+    try {
+        var r = http.get("http://47.105.59.72:8333/auto/api/v1/answer?keywords=" + question);
+
+        if (r.statusCode !== 200) {
+            window.answer.setText("获取答案失败")
+        }
+
+        if (r.body.string() === "[]") {
+            window.answer.setText("题库暂无此答案")
+        } else {
+            window.answer.setText(r.body.string())
+        }
+
+    } catch (err) { 
+        // console.log(r.body)
+        // cnosole_question()
+        window.answer.setText("网络异常，请重试")
+    }
+
 }
 
 
@@ -14,21 +33,21 @@ function cnosole_question() {
 // 悬浮框部分代码
 var window = floaty.window(
     <frame>
-        <button id="action" text="开始运行" w="90" h="40" bg="#77ffffff"/>
-        <text id="answer" text="点击可调整位置" textSize="16sp"/>
+        <button id="action" text="求助" w="90" h="40" bg="#77ffffff" />
+        <text id="answer" text="点击可调整位置" textSize="16sp" />
     </frame>
 );
 window.exitOnClose();
 
-window.action.click(()=>{
+window.action.click(() => {
     cnosole_question()
 });
 
-window.action.longClick(()=>{
-   window.setAdjustEnabled(!window.isAdjustEnabled());
-   return true;
+window.action.longClick(() => {
+    window.setAdjustEnabled(!window.isAdjustEnabled());
+    return true;
 });
 
-setInterval(()=>{}, 1000);
+setInterval(() => { }, 1000);
 
 
