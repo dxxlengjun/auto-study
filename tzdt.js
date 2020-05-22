@@ -3,27 +3,26 @@ function cnosole_question() {
     var question;
     try {
         question = className("ListView").findOnce().parent().child(0).desc();
+        console.log(question)
     } catch (err) {
         window.answer.setText("请重新获取答案")
     }
 
     try {
-        var r = http.get("http://47.105.59.72:8333/auto/api/v1/answer?keywords=" + question);
+        http.get("http://47.105.59.72:8333/auto/api/v1/answer?keywords=" + question, {}, function (res, err) {
+            if (err) {
+                console.error(err);
+                window.answer.setText("网络异常，请重试")
+                return;
+            }
+            console.log(res.body.string())
+            window.answer.setText(res.body.string())
+        });
 
-        if (r.statusCode !== 200) {
-            window.answer.setText("获取答案失败")
-        }
-
-        if (r.body.string() === "[]") {
-            window.answer.setText("题库暂无此答案")
-        } else {
-            window.answer.setText(r.body.string())
-        }
-
-    } catch (err) { 
+    } catch (err) {
+        console.log(err)
         // console.log(r.body)
         // cnosole_question()
-        window.answer.setText("网络异常，请重试")
     }
 
 }
@@ -37,6 +36,8 @@ var window = floaty.window(
         <text id="answer" text="点击可调整位置" textSize="16sp" />
     </frame>
 );
+
+window.setSize(500, 200)
 window.exitOnClose();
 
 window.action.click(() => {
